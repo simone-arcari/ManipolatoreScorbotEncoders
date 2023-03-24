@@ -8,10 +8,10 @@ function [encoders] = findLimit(robot, pwms)
     delta = zeros(N, 1000);             % ogni colonna tiene traccia dell'incremeto letto dagli encoder
     encoders = zeros(N, 1000);          % ogni colonna tiene traccia del valore corrente degli encoder
     stop = zeros(1, N);
-    token = zeros(1, N);                % vettore riga che tiene traccia di quante volte ogni encoder non cambia il suo valore, serve per capire quando siamo arrivati al fine corsa
+    token = zeros(1, N)                % vettore riga che tiene traccia di quante volte ogni encoder non cambia il suo valore, serve per capire quando siamo arrivati al fine corsa
     
     for i = 1:1:N
-        if pwms(i) == 0
+        if pwm(i) == 0
             stop(i) = 1;
         end
     end
@@ -21,10 +21,10 @@ function [encoders] = findLimit(robot, pwms)
     
 
     k = 2;
-    while stop(1)~=1  || stop(2)~=1 || stop(3)~=1 ||  stop(4)~=1 || stop(5)~=1 || stop(6)~=1
+    while stop(1)~=1  || stop(2)~=1 || stop(3)~=1 ||  stop(4)~=1 || stop(5)~=1 
         [num(1), status(1), switches(:,k), delta(:,k), encoders(:,k)] = robot.control(Command.DAQ, pwms(:, 1));
           
-        for j = 1:1:N
+        for j = 1:1:5
             if(old_encoders(j) == encoders(j,k))
                 token(j) = token(j) + 1;
     
@@ -40,8 +40,8 @@ function [encoders] = findLimit(robot, pwms)
         fprintf("switches: %d %d %d %d %d %d\n", switches(1,k), switches(2,k), switches(3,k), switches(4,k), switches(5,k), switches(6,k))
         fprintf("encoders: %d %d %d %d %d %d\n", encoders(1,k), encoders(2,k), encoders(3,k), encoders(4,k), encoders(5,k), encoders(6,k))
         fprintf("delta: %d %d %d %d %d %d\n", delta(1,k), delta(2,k), delta(3,k), delta(4,k), delta(5,k), delta(6,k))
-        fprintf("token: %d %d %d %d %d %d\n", token(1), token(2), token(3), token(4), token(5), token(6)) 
-        fprintf("stop: %d %d %d %d %d %d\n", stop(1), stop(2), stop(3), stop(4), stop(5), stop(6)) 
+        fprintf("token: %d %d %d\n", token(1), token(2), token(3), token(4), token(5)) 
+        fprintf("stop: %d %d %d\n", stop(1), stop(2), stop(3), stop(4), stop(5)) 
     
         old_encoders = encoders(:,k);
         k = k+1;

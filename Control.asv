@@ -61,15 +61,14 @@ while ~isequal(Stop*one,zero)
 
     end
     robot.Encoders
+    Stop
 end
 robot.stop_motors();
-
-pwms = [0; 0; 0; -255; 255; 0];
-findLimit(robot, pwms)
-
 
 pwms = [0; 0; 0; 255; -255; 0];
 findLimit(robot, pwms)
 
-robot.stop_motors();
+
+pwms = [0; 0; 0; 0; 255; 0];
+findLimit(robot, pwms)
 
