@@ -4,6 +4,5 @@ classdef Command < uint8
       DAQ  (1)
       PID  (2)
       Setup(3)
-   end
+    end
 end
-

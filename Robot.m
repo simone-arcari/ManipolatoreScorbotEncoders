@@ -1,5 +1,5 @@
 classdef Robot < handle
-    properties (Access = private)
+    properties (Access = public)
         N;
         Serial;
         Encoders;

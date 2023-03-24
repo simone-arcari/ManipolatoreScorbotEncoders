@@ -1,0 +1,47 @@
+function [encoders] = findLimit(robot, pwms)
+
+    % Parameters
+    N = 6;
+    num = zeros(1, 1000);               %
+    status = zeros(1, 1000);            %
+    switches = zeros(N, 1000);          %
+    delta = zeros(N, 1000);             % ogni colonna tiene traccia dell'incremeto letto dagli encoder
+    encoders = zeros(N, 1000);          % ogni colonna tiene traccia del valore corrente degli encoder
+    stop = zeros(1, 3);
+    token = zeros(1, 3)                % vettore riga che tiene traccia di quante volte ogni encoder non cambia il suo valore, serve per capire quando siamo arrivati al fine corsa
+    
+    
+    [num(1), status(1), switches(:,1), delta(:,1), encoders(:,1)] = robot.control(Command.DAQ, pwms(:,1));
+    old_encoders = encoders(:,1);
+    
+
+    k = 2;
+    while stop(1)~=1  || stop(2)~=1 || stop(3)~=1 
+        [num(1), status(1), switches(:,k), delta(:,k), encoders(:,k)] = robot.control(Command.DAQ, pwms(:, 1));
+          
+        for j = 1:1:3
+            if(old_encoders(j) == encoders(j,k))
+                token(j) = token(j) + 1;
+    
+                if(token(j) == 30)
+                    stop(j) = 1;
+                    pwms(j) = 0;
+                end
+            else 
+                token(j) = 0;
+            end
+        end
+    
+        fprintf("switches: %d %d %d %d %d %d\n", switches(1,k), switches(2,k), switches(3,k), switches(4,k), switches(5,k), switches(6,k))
+        fprintf("encoders: %d %d %d %d %d %d\n", encoders(1,k), encoders(2,k), encoders(3,k), encoders(4,k), encoders(5,k), encoders(6,k))
+        fprintf("delta: %d %d %d %d %d %d\n", delta(1,k), delta(2,k), delta(3,k), delta(4,k), delta(5,k), delta(6,k))
+        fprintf("token: %d %d %d\n", token(1), token(2), token(3)) 
+        fprintf("stop: %d %d %d\n", stop(1), stop(2), stop(3)) 
+    
+        old_encoders = encoders(:,k);
+        k = k+1;
+    end
+    
+    encoders = encoders(:,k-1);
+end
+

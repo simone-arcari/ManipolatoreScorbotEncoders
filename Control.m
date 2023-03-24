@@ -1,52 +1,45 @@
-clear;
+clear all;
 clc;
 
 
-%% Serial port utility
+% Serial port utility
 ports = serialportlist("available");
-disp(ports);
+disp(ports)
+pause(0.5)
 
 
-%% Parameters
+% Parameters
 N = 6;
 port = ports(1);
-baudrate = 500000;
-T = 0:0.01:60;
-pwms = [255 * sin(2*pi.*T./10); 255 * cos(2*pi.*T./10); 2 * T; 255 * sin(2*pi.*T./10); 255 * cos(2*pi.*T./10); 2 * T];
+baudrate = 115200;                  % velocità di trasmissione dati
+pwms = [255; -255; 255; 0; 0; 0];    % vettore riga per i pwm di ogni motore
+num = zeros(1, 1000);               %
+status = zeros(1, 1000);            %
+switches = zeros(N, 1000);          %
+delta = zeros(N, 1000);             % ogni colonna tiene traccia dell'incremeto letto dagli encoder
+encoders = zeros(N, 1000);          % ogni colonna tiene traccia del valore corrente degli encoder
 
-num = zeros(1, length(T));
-status = zeros(1, length(T));
-switches = zeros(N, length(T));
-delta = zeros(N, length(T));
-encoders = zeros(N, length(T));
-
-
-%% Initialization
+% Initialization
 clear robot
 robot = Robot(N, port, baudrate);
+pause(1);
 
 
-%% Test 1
-for k = 1:length(T)
-    fprintf("cycle:    %d\n", k);
-    [num(k), status(k), switches(:,k), delta(:,k), encoders(:,k)] = robot.control(Command.DAQ, pwms(:, k));
-    fprintf("num:      %d\n", num(k));
-    fprintf("status:   %d\n", status(k));
-    fprintf("switches: %d %d %d %d %d %d\n", switches(1,k), switches(2,k), switches(3,k), switches(4,k), switches(5,k), switches(6,k));
-    fprintf("delta:    %d %d %d %d %d %d\n", delta(1,k), delta(2,k), delta(3,k), delta(4,k), delta(5,k), delta(6,k));
-    fprintf("encoders: %d %d %d %d %d %d\n", encoders(1,k), encoders(2,k), encoders(3,k), encoders(4,k), encoders(5,k), encoders(6,k));
-    fprintf("\n");
-end
+
+% test 0 GO HOME
+pwms = [255; -255; 255; 0; 0; 0];
+findLimit(robot, pwms)
+
+pwms = [-255; 255; 0; 0; 0; 0];
+findLimit(robot, pwms)
 
 robot.stop_motors();
 
+robot.Encoders = zeros(N,1);
 
-%% Test 2
-for k = 1:length(T)
-    [num(k), status(k), switches(:,k), delta(:,k), encoders(:,k)] = robot.set_pwm(pwms(:,k));
-end
-
-robot.stop_motors();
+pwms = [0; 0; 0; 0; 0; 0];
+[num(1), status(1), switches, delta, encoders] = robot.control(Command.DAQ, pwms(:,1));
+fprintf("encoders: %d %d %d %d %d %d\n", encoders(1), encoders(2), encoders(3), encoders(4), encoders(5), encoders(6));
 
 
 %%
